@@ -5,22 +5,38 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.huertohogar.app.ui.screens.HomeScreen
+import com.huertohogar.app.ui.screens.LoginScreen
+import com.huertohogar.app.ui.screens.RegisterScreen
 
 /**
- * Este Composable gestiona todas las rutas de la aplicación.
- * Es el "controlador de tráfico" que muestra la pantalla correcta.
+ * Composable que define el grafo de navegación principal de la aplicación.
+ * Gestiona qué pantalla se muestra en cada momento.
  */
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "home_screen") {
-        // Define la primera pantalla que se mostrará al abrir la app.
-        composable("home_screen") {
-            HomeScreen(navController)
+
+    NavHost(
+        navController = navController,
+        // La aplicación ahora comenzará en la pantalla de Login.
+        startDestination = AppScreens.LoginScreen.route
+    ) {
+        // Define la pantalla para la ruta de Login
+        composable(route = AppScreens.LoginScreen.route) {
+            LoginScreen(navController = navController)
         }
 
-        // Aquí agregarás las otras pantallas más adelante:
-        // composable("products_screen") { ProductsScreen(navController) }
-        // composable("login_screen") { LoginScreen(navController) }
+        // Define la pantalla para la ruta de Registro
+        composable(route = AppScreens.RegisterScreen.route) {
+            RegisterScreen(navController = navController)
+        }
+
+        // Define la pantalla para la ruta de Inicio (Home)
+        composable(route = AppScreens.HomeScreen.route) {
+            HomeScreen(navController = navController)
+        }
+
+        // Aquí se agregarán las demás pantallas (Productos, Carrito, etc.)
     }
 }
+

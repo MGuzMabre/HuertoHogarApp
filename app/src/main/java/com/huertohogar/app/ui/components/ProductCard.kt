@@ -51,7 +51,7 @@ fun ProductCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp),
-                contentScale = ContentScale.Crop // Asegura que la imagen cubra el espacio
+                contentScale = ContentScale.Crop
             )
 
             Column(modifier = Modifier.padding(12.dp)) {
@@ -59,7 +59,7 @@ fun ProductCard(
                     text = producto.nombre,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    maxLines = 1 // Evita que textos largos rompan el diseño
+                    maxLines = 1
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
