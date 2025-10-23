@@ -12,30 +12,75 @@ import kotlinx.coroutines.flow.asStateFlow
  */
 class HomeViewModel : ViewModel() {
 
-    // _uiState es privado y mutable, solo el ViewModel puede cambiarlo.
+    // _uiState es un flujo de datos que guarda el estado actual de la pantalla de inicio.
+    // Es "mutable" porque su valor puede cambiar, y "privado" para que solo el ViewModel lo modifique.
     private val _uiState = MutableStateFlow(HomeUiState())
-    // uiState es público e inmutable, la UI solo puede leerlo.
+
+    // uiState es la versión pública y de solo lectura del estado.
+    // La pantalla (UI) observa este flujo y se actualiza automáticamente cuando los datos cambian.
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
+    /**
+     * El bloque `init` se ejecuta automáticamente cuando se crea el ViewModel por primera vez.
+     * Es ideal para cargar los datos iniciales que necesita la pantalla.
+     */
     init {
-        // Carga los productos destacados cuando el ViewModel se crea.
         cargarProductosDestacados()
     }
 
+    /**
+     * Carga una lista de productos destacados y actualiza el estado de la UI.
+     * Por ahora, los productos están "hardcodeados" (escritos directamente aquí).
+     */
     private fun cargarProductosDestacados() {
-        // Simulación de carga de datos (como en tu productManager.js)
+        // Se actualiza el valor de _uiState con una nueva instancia de HomeUiState,
+        // que contiene la lista de productos que queremos mostrar.
         _uiState.value = HomeUiState(
             productosDestacados = listOf(
-                Producto("FR001", "Manzanas Fuji", "Manzanas Fuji crujientes y dulces.", 1200.0, 150, "frutas", "https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?q=80&w=2070", "Valle del Maule"),
-                Producto("VR001", "Zanahorias Orgánicas", "Zanahorias crujientes cultivadas sin pesticidas.", 900.0, 100, "verduras", "https://images.unsplash.com/photo-1590432337362-205a1b3a1a36?q=80&w=2070", "Región de O'Higgins"),
-                Producto("PO001", "Miel Orgánica", "Miel pura y orgánica de apicultores locales.", 5000.0, 50, "organicos", "https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?q=80&w=1974", "Región del Maule")
+                Producto(
+                    id = "FR001",
+                    nombre = "Manzanas Fuji",
+                    descripcion = "Manzanas Fuji crujientes y dulces.",
+                    precio = 1200.0,
+                    stock = 150,
+                    categoria = "frutas",
+                    imagenUrl = "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/manzana.jpg?raw=true",
+                    origen = "Valle del Maule"
+                ),
+                Producto(
+                    id = "VR001",
+                    nombre = "Zanahorias Orgánicas",
+                    descripcion = "Zanahorias crujientes cultivadas sin pesticidas.",
+                    precio = 900.0,
+                    stock = 100,
+                    categoria = "verduras",
+                    imagenUrl = "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/zanahoria.jpg?raw=true",
+                    origen = "Región de O'Higgins"
+                ),
+                Producto(
+                    id = "PO001",
+                    nombre = "Miel Orgánica",
+                    descripcion = "Miel pura y orgánica de apicultores locales.",
+                    precio = 5000.0,
+                    stock = 50,
+                    categoria = "organicos",
+                    imagenUrl = "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/miel.jpg?raw=true",
+                    origen = "Región del Maule"
+                )
             )
         )
+        // TODO: En una aplicación real, estos datos deberían venir de una fuente externa,
+        // como una API o una base de datos. Se debería crear una función (probablemente
+        // una corrutina) para obtener estos datos de forma asíncrona y manejar
+        // estados de carga (isLoading = true) y posibles errores.
     }
 }
 
 /**
  * Data class que representa el estado completo de la UI para HomeScreen.
+ *
+ * @param productosDestacados La lista de productos que se mostrarán en la pantalla.
+ * @param isLoading Un booleano que indica si se están cargando datos (útil para mostrar un spinner).
  */
 data class HomeUiState(
     val productosDestacados: List<Producto> = emptyList(),

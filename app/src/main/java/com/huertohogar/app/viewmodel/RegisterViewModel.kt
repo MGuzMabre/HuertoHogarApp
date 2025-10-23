@@ -14,50 +14,88 @@ import kotlinx.coroutines.flow.update
  */
 class RegisterViewModel : ViewModel() {
 
-    // Flujo de estado privado y mutable que contiene el estado actual del formulario.
+    // _uiState es un flujo de datos mutable que contiene el estado actual del formulario.
+    // Es privado para que solo el ViewModel pueda modificarlo.
     private val _uiState = MutableStateFlow(RegisterUiState())
-    // Flujo de estado público e inmutable, expuesto a la UI para que lo observe.
+
+    // uiState es la versión pública y de solo lectura de _uiState.
+    // La interfaz de usuario (la pantalla) observa este flujo para reaccionar a los cambios.
     val uiState: StateFlow<RegisterUiState> = _uiState.asStateFlow()
 
-    // --- Funciones para manejar eventos de la UI ---
 
+    /**
+     * Esta función se llama cada vez que el usuario escribe en el campo de nombre.
+     * Actualiza el valor del nombre en el estado y borra cualquier error asociado.
+     * @param nombre El nuevo texto que el usuario ha introducido.
+     */
     fun onNombreChange(nombre: String) {
+        // "update" actualiza el estado de forma segura.
         _uiState.update { currentState ->
             currentState.copy(
                 nombre = nombre,
-                errors = currentState.errors.copy(nombre = null) // Limpia el error al escribir
+                errors = currentState.errors.copy(nombre = null) // Limpia el error del nombre.
             )
         }
     }
 
+    /**
+     * Se activa cuando cambia el campo de apellido.
+     * @param apellido El nuevo apellido introducido.
+     */
     fun onApellidoChange(apellido: String) {
         _uiState.update { it.copy(apellido = apellido, errors = it.errors.copy(apellido = null)) }
     }
 
+    /**
+     * Se activa cuando cambia el campo de RUN.
+     * @param run El nuevo RUN introducido.
+     */
     fun onRunChange(run: String) {
         _uiState.update { it.copy(run = run, errors = it.errors.copy(run = null)) }
     }
 
+    /**
+     * Se activa cuando cambia el campo de email.
+     * @param email El nuevo email introducido.
+     */
     fun onEmailChange(email: String) {
         _uiState.update { it.copy(email = email, errors = it.errors.copy(email = null)) }
     }
 
+    /**
+     * Se activa cuando cambia el campo de contraseña.
+     * @param password La nueva contraseña introducida.
+     */
     fun onPasswordChange(password: String) {
         _uiState.update { it.copy(password = password, errors = it.errors.copy(password = null)) }
     }
 
+    /**
+     * Se activa cuando cambia el campo de confirmar contraseña.
+     * @param confirmPassword La nueva confirmación de contraseña.
+     */
     fun onConfirmPasswordChange(confirmPassword: String) {
         _uiState.update { it.copy(confirmPassword = confirmPassword, errors = it.errors.copy(confirmPassword = null)) }
     }
 
+    /**
+     * Se activa cuando el usuario marca o desmarca la casilla de aceptar términos.
+     * @param acepta `true` si está marcada, `false` si no.
+     */
     fun onAceptaTerminosChange(acepta: Boolean) {
         _uiState.update { it.copy(aceptaTerminos = acepta, errors = it.errors.copy(aceptaTerminos = null)) }
     }
 
+    /**
+     * Cambia la visibilidad de la contraseña (para mostrar/ocultar los caracteres).
+     */
     fun onTogglePasswordVisibility() {
         _uiState.update { it.copy(passwordVisible = !it.passwordVisible) }
     }
 
+    /**
+     * Cambia la visibilidad de la confirmación de contraseña.
+     */
     fun onToggleConfirmPasswordVisibility() {
         _uiState.update { it.copy(confirmPasswordVisible = !it.confirmPasswordVisible) }
     }
@@ -67,7 +105,9 @@ class RegisterViewModel : ViewModel() {
      * @return `true` si el formulario es válido, `false` si contiene errores.
      */
     fun validarFormulario(): Boolean {
+        // Obtiene el estado actual para no tener que repetirlo.
         val state = _uiState.value
+        // Crea un nuevo objeto de errores basado en las validaciones.
         val newErrors = RegisterErrorState(
             nombre = if (state.nombre.isBlank()) "El nombre es obligatorio" else null,
             apellido = if (state.apellido.isBlank()) "El apellido es obligatorio" else null,
@@ -78,24 +118,38 @@ class RegisterViewModel : ViewModel() {
             aceptaTerminos = if (!state.aceptaTerminos) "Debes aceptar los términos y condiciones" else null
         )
 
+        // Actualiza el estado de la UI con los nuevos errores que se encontraron.
         _uiState.update { it.copy(errors = newErrors) }
 
-        // El formulario es válido si no hay ningún mensaje de error en el objeto de errores.
+        // Devuelve 'true' solo si TODOS los campos de error son nulos (o sea, no hay errores).
         return newErrors.nombre == null && newErrors.apellido == null && newErrors.run == null &&
                 newErrors.email == null && newErrors.password == null &&
                 newErrors.confirmPassword == null && newErrors.aceptaTerminos == null
+        // TODO: La validación del RUN y la contraseña podrían ser más complejas y robustas.
+        // Por ejemplo, verificar el dígito verificador del RUN o requerir caracteres especiales en la contraseña.
     }
 
-    // --- Funciones de validación privadas ---
 
+    /**
+     * Comprueba si un email tiene un formato válido.
+     * @param email El correo a validar.
+     * @return `true` si es un email válido.
+     */
     private fun isValidEmail(email: String): Boolean {
-        // Validación simple de formato de email (puedes hacerla más compleja)
+        // Usa un patrón estándar de Android para validar emails. ¡Muy práctico!
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
+    /**
+     * Comprueba si un RUN chileno tiene el formato correcto (ej: 12345678-9).
+     * @param run El RUN a validar.
+     * @return `true` si el formato es válido.
+     */
     private fun isValidRun(run: String): Boolean {
-        // Validación simple de formato de RUN
+        // Una expresión regular para asegurar que el RUN tenga el formato correcto.
         val regex = """^\d{7,8}-[\d|kK]$""".toRegex()
         return regex.matches(run)
+        // TODO: Esta validación solo comprueba el formato, no si el dígito verificador es correcto.
+        // Se podría implementar el algoritmo del Módulo 11 para una validación completa.
     }
 }

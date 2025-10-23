@@ -38,15 +38,18 @@ fun LoginScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(horizontal = 24.dp)
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(rememberScrollState()), // Permite scroll en pantallas pequeñas
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center // Centra el contenido verticalmente
         ) {
             Text("Iniciar Sesión", style = MaterialTheme.typography.headlineMedium)
-            Text("Ingresa a tu cuenta para continuar", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                "Ingresa a tu cuenta para continuar",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f) // Un gris más suave
+            )
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Campo Email
             OutlinedTextField(
                 value = uiState.email,
                 onValueChange = { loginViewModel.onEmailChange(it) },
@@ -54,11 +57,11 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth(),
                 isError = uiState.errors.email != null,
                 supportingText = { if (uiState.errors.email != null) Text(uiState.errors.email!!) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                singleLine = true
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo Contraseña
             OutlinedTextField(
                 value = uiState.password,
                 onValueChange = { loginViewModel.onPasswordChange(it) },
@@ -68,6 +71,7 @@ fun LoginScreen(
                 supportingText = { if (uiState.errors.password != null) Text(uiState.errors.password!!) },
                 visualTransformation = if (uiState.passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                singleLine = true,
                 trailingIcon = {
                     IconButton(onClick = { loginViewModel.onTogglePasswordVisibility() }) {
                         Icon(
@@ -78,25 +82,19 @@ fun LoginScreen(
                 }
             )
             Spacer(modifier = Modifier.height(24.dp))
-
-            // Botón Ingresar
             Button(
                 onClick = {
                     if (loginViewModel.validarFormulario()) {
-                        // Lógica de login exitoso (por ahora, navegamos al Home)
                         navController.navigate(AppScreens.HomeScreen.route) {
-                            // Limpia la pila de navegación para que el usuario no pueda volver al login
                             popUpTo(AppScreens.LoginScreen.route) { inclusive = true }
                         }
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().height(48.dp)
             ) {
                 Text("Ingresar")
             }
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Botón para ir a Registro
+            Spacer(modifier = Modifier.height(16.dp))
             TextButton(onClick = { navController.navigate(AppScreens.RegisterScreen.route) }) {
                 Text("¿No tienes una cuenta? Crear Cuenta")
             }

@@ -11,6 +11,6 @@ data class Producto(
     val precio: Double,
     val stock: Int,
     val categoria: String,
-    val imagenUrl: String, // Usaremos URLs para las imágenes
+    val imagenUrl: String,
     val origen: String
 )

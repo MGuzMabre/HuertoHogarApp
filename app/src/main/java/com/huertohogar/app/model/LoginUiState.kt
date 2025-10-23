@@ -1,7 +1,6 @@
 package com.huertohogar.app.model
 
 /**
- * Representa el estado completo del formulario de inicio de sesión.
  *
  * @param email El correo electrónico ingresado por el usuario.
  * @param password La contraseña ingresada.
