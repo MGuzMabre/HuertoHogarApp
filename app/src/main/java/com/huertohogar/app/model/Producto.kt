@@ -12,5 +12,6 @@ data class Producto(
     val stock: Int,
     val categoria: String,
     val imagenUrl: String,
-    val origen: String
+    val origen: String,
+    val unidad: String
 )

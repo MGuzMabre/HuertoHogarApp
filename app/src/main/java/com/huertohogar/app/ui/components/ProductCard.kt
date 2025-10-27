@@ -79,7 +79,7 @@ fun ProductCard(
                 Spacer(modifier = Modifier.height(4.dp)) // Un pequeño espacio vertical.
                 Text(
                     // Formatea el precio para que se vea como "1.200" en lugar de "1200.0".
-                    text = "$${String.format("%,.0f", producto.precio)} CLP / kg",
+                    text = "$${String.format("%,.0f", producto.precio)} CLP / ${producto.unidad}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary, // Usa el color primario del tema para destacar.
                     fontWeight = FontWeight.SemiBold
@@ -110,7 +110,8 @@ fun ProductCardPreview() {
         stock = 150,
         categoria = "frutas",
         imagenUrl = "url_invalida", // Usamos una URL inválida para probar el placeholder de error.
-        origen = "Valle del Maule"
+        origen = "Valle del Maule",
+        unidad = "Kg"
     )
     // Envolvemos el componente en nuestro tema para que la preview se vea con los colores y fuentes correctos.
     HuertoHogarAppTheme {

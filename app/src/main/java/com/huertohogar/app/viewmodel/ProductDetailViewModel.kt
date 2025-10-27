@@ -37,24 +37,28 @@ class ProductDetailViewModel : ViewModel() {
     // Lista temporal de todos los productos. En una app real, esto vendría de una base de datos o una API.
     // TODO: Reemplazar esto con una llamada a un Repository cuando Room (base de datos) esté implementado.
     private val allProductsList = listOf(
+        // Frutas
         Producto("FR001", "Manzanas Fuji", "Manzanas Fuji crujientes y dulces.", 1200.0, 150, "frutas",
-            "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/manzana.jpg?raw=true", "Valle del Maule"),
+            "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/manzana.jpg?raw=true", "Valle del Maule", unidad = "Kg"),
         Producto("FR002", "Naranjas Valencia", "Jugosas y ricas en vitamina C.", 1000.0, 200, "frutas",
-            "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/naranja.jpg?raw=true", "Región de Valparaíso"),
+            "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/naranja.jpg?raw=true", "Región de Valparaíso",unidad = "Kg"),
         Producto("FR003", "Plátanos Cavendish", "Plátanos maduros y dulces.", 800.0, 250, "frutas",
-            "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/platano.jpg?raw=true", "Región de O'Higgins"),
+            "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/platano.jpg?raw=true", "Región de O'Higgins",unidad = "Kg" ),
+        // Verduras
         Producto("VR001", "Zanahorias Orgánicas", "Zanahorias crujientes sin pesticidas.", 900.0, 100, "verduras",
-            "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/zanahoria.jpg?raw=true", "Región de O'Higgins"),
+            "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/zanahoria.jpg?raw=true", "Región de O'Higgins", unidad = "Kg"),
         Producto("VR002", "Espinacas Frescas", "Espinacas frescas y nutritivas.", 700.0, 80, "verduras",
-            "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/espinaca.jpg?raw=true", "Región Metropolitana"),
+            "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/espinaca.jpg?raw=true", "Región Metropolitana", unidad = "Bolsa 500g"),
         Producto("VR003", "Pimientos Tricolores", "Pimientos rojos, amarillos y verdes.", 1500.0, 120, "verduras",
-            "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/pimiento.jpg?raw=true", "Región de Valparaíso"),
+            "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/pimiento.jpg?raw=true", "Región de Valparaíso", unidad = "Kg"),
+        // Orgánicos
         Producto("PO001", "Miel Orgánica", "Miel pura y orgánica local.", 5000.0, 50, "organicos",
-            "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/miel.jpg?raw=true", "Región del Maule"),
+            "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/miel.jpg?raw=true", "Región del Maule",unidad = "Frasco 500g"),
         Producto("PO002", "Quinua Orgánica", "Quinua orgánica de alta calidad.", 3500.0, 75, "organicos",
-            "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/quinua.jpg?raw=true", "Región de La Araucanía"),
+            "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/quinua.jpg?raw=true", "Región de La Araucanía", unidad = "Kg"),
+        // Lácteos
         Producto("PL001", "Leche Entera", "Leche entera fresca de praderas.", 1200.0, 60, "lacteos",
-            "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/leche.jpg?raw=true", "Región de Los Lagos")
+            "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/leche.jpg?raw=true", "Región de Los Lagos",unidad = "L")
     )
 
     /**

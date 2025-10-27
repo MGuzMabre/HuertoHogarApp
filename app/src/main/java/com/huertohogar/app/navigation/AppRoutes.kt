@@ -7,7 +7,8 @@ sealed class AppScreens(val route: String) {
     // Pantallas principales
     object HomeScreen : AppScreens("home_screen")
     object ProductsScreen : AppScreens("products_screen")
-    object CartScreen : AppScreens("cart_screen") // <-- NUEVA RUTA AÑADIDA
+    object CartScreen : AppScreens("cart_screen")
+    object ProfileScreen : AppScreens("profile_screen") // <-- NUEVA RUTA AÑADIDA
 
     // Pantallas de Autenticación
     object LoginScreen : AppScreens("login_screen")
@@ -18,4 +19,3 @@ sealed class AppScreens(val route: String) {
         fun createRoute(productId: String) = "product_detail_screen/$productId"
     }
 }
-

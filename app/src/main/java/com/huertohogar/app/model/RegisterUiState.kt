@@ -13,6 +13,7 @@ package com.huertohogar.app.model
  * @param aceptaTerminos Si el usuario aceptó los términos y condiciones.
  * @param passwordVisible Controla si la contraseña es visible o no.
  * @param errors Un objeto que contiene los mensajes de error para cada campo.
+ * @param isLoading Indica si se está procesando el registro (para mostrar un loader).
  */
 data class RegisterUiState(
     val nombre: String = "",
@@ -24,7 +25,8 @@ data class RegisterUiState(
     val aceptaTerminos: Boolean = false,
     val passwordVisible: Boolean = false,
     val confirmPasswordVisible: Boolean = false,
-    val errors: RegisterErrorState = RegisterErrorState()
+    val errors: RegisterErrorState = RegisterErrorState(),
+    val isLoading: Boolean = false // Estado para la animación de carga
 )
 
 /**

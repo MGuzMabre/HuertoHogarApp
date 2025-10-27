@@ -31,7 +31,6 @@ fun LoginScreen(
     loginViewModel: LoginViewModel = viewModel()
 ) {
     val uiState by loginViewModel.uiState.collectAsState()
-
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
@@ -58,7 +57,9 @@ fun LoginScreen(
                 isError = uiState.errors.email != null,
                 supportingText = { if (uiState.errors.email != null) Text(uiState.errors.email!!) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                singleLine = true
+                singleLine = true,
+                // Deshabilitamos el campo si está cargando
+                enabled = !uiState.isLoading
             )
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -79,23 +80,46 @@ fun LoginScreen(
                             contentDescription = "Toggle password visibility"
                         )
                     }
-                }
+                },
+                // Deshabilitamos el campo si está cargando
+                enabled = !uiState.isLoading
             )
             Spacer(modifier = Modifier.height(24.dp))
+
             Button(
                 onClick = {
-                    if (loginViewModel.validarFormulario()) {
+                    // 1. Llamamos a la nueva función del ViewModel
+                    loginViewModel.onLoginClicked {
+                        // 2. Esta es la lambda 'onLoginSuccess'.
+                        // Este código solo se ejecutará si el login fue exitoso.
                         navController.navigate(AppScreens.HomeScreen.route) {
                             popUpTo(AppScreens.LoginScreen.route) { inclusive = true }
                         }
                     }
                 },
-                modifier = Modifier.fillMaxWidth().height(48.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                // 3. Deshabilitamos el botón si está cargando
+                enabled = !uiState.isLoading
             ) {
-                Text("Ingresar")
+                // 4. Mostramos el loader o el texto
+                if (uiState.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.onPrimary // Color del loader
+                    )
+                } else {
+                    Text("Ingresar")
+                }
             }
             Spacer(modifier = Modifier.height(16.dp))
-            TextButton(onClick = { navController.navigate(AppScreens.RegisterScreen.route) }) {
+
+            TextButton(
+                onClick = { navController.navigate(AppScreens.RegisterScreen.route) },
+                // Deshabilitamos el botón si está cargando
+                enabled = !uiState.isLoading
+            ) {
                 Text("¿No tienes una cuenta? Crear Cuenta")
             }
         }
@@ -109,4 +133,3 @@ fun LoginScreenPreview() {
         LoginScreen(navController = NavController(LocalContext.current))
     }
 }
-

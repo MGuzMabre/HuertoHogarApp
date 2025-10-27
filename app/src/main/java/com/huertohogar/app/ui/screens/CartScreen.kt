@@ -4,15 +4,19 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -27,7 +31,11 @@ import com.huertohogar.app.model.CartUiState
 import com.huertohogar.app.viewmodel.CartViewModel
 import java.util.Locale
 
-@SuppressLint("DefaultLocale") // Needed for String.format without Locale in cart item subtotal
+// Definimos el Locale para Chile (CLP) de la forma moderna
+// para no usar el constructor obsoleto.
+private val chileLocale: Locale = Locale.forLanguageTag("es-CL")
+
+@SuppressLint("DefaultLocale") // Necesario por si algún String.format se nos pasa
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CartScreen(
@@ -72,7 +80,7 @@ fun CartScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     Text("Tu carrito está vacío", style = MaterialTheme.typography.headlineSmall)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Button(onClick = { navController.popBackStack() }) { // Volver a la pantalla anterior
+                    Button(onClick = { navController.popBackStack() }) {  // Volver a la pantalla anterior
                         Text("Ver productos")
                     }
                 }
@@ -92,6 +100,7 @@ fun CartScreen(
                     items(cartUiState.items, key = { it.producto.id }) { cartItem ->
                         CartListItem(
                             cartItem = cartItem,
+                            // Ahora sí usamos onQuantityChange
                             onQuantityChange = { newQuantity ->
                                 cartViewModel.updateQuantity(cartItem.producto.id, newQuantity)
                             },
@@ -99,7 +108,8 @@ fun CartScreen(
                                 cartViewModel.removeFromCart(cartItem.producto.id)
                             }
                         )
-                        Divider() // Separador entre items
+                        // 'Divider' está obsoleto, usamos 'HorizontalDivider'
+                        HorizontalDivider() // Separador entre items
                     }
                 }
 
@@ -122,7 +132,7 @@ fun CartScreen(
                         Text("Vaciar Carrito")
                     }
                     Button(
-                        onClick = { /* TODO: Navegar al proceso de pago */ },
+                        onClick = {  /* TODO: Navegar al proceso de pago  */ },
                         modifier = Modifier.weight(1f)
                     ) {
                         Text("Proceder al Pago")
@@ -137,7 +147,7 @@ fun CartScreen(
 @Composable
 private fun CartListItem(
     cartItem: CartItem,
-    onQuantityChange: (Int) -> Unit,
+    onQuantityChange: (Int) -> Unit, // ¡ARREGLO ERROR 2! Ahora se usa
     onRemoveClick: () -> Unit
 ) {
     Row(
@@ -157,6 +167,7 @@ private fun CartListItem(
             contentDescription = cartItem.producto.nombre,
             modifier = Modifier
                 .size(80.dp) // Imagen más pequeña
+                .clip(CircleShape) // Hacemos la imagen redonda
                 .padding(end = 16.dp),
             contentScale = ContentScale.Crop
         )
@@ -168,24 +179,48 @@ private fun CartListItem(
             Text(cartItem.producto.nombre, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                "$${String.format("%,.0f", cartItem.producto.precio)} CLP / kg",
+                "$${String.format(chileLocale, "%,.0f", cartItem.producto.precio)} CLP / ${cartItem.producto.unidad}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                "Subtotal: $${String.format("%,.0f", cartItem.subtotal)} CLP",
+                "Subtotal: $${String.format(chileLocale, "%,.0f", cartItem.subtotal)} CLP",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold
             )
         }
 
         // Controles de Cantidad y Eliminación
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            // TODO: Implementar botones +/- o TextField para cambiar cantidad
-            Text(" Cant: ${cartItem.cantidad} ", style = MaterialTheme.typography.bodyLarge) // Placeholder
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+            // Botón de eliminar
             IconButton(onClick = onRemoveClick) {
                 Icon(Icons.Default.Delete, contentDescription = "Eliminar item", tint = MaterialTheme.colorScheme.error)
+            }
+
+            // ¡ARREGLO ERROR 2!
+            // Implementamos los botones de +/-
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Botón de Restar
+                IconButton(
+                    onClick = { onQuantityChange(cartItem.cantidad - 1) },
+                    enabled = cartItem.cantidad > 0 // Deshabilitado si es 0 (aunque se borraría)
+                ) {
+                    Icon(Icons.Default.Remove, contentDescription = "Restar uno")
+                }
+
+                Text(
+                    text = "${cartItem.cantidad}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.widthIn(min = 24.dp) // Da espacio para números de 2 dígitos
+                )
+
+                // Botón de Sumar
+                IconButton(onClick = { onQuantityChange(cartItem.cantidad + 1) }) {
+                    Icon(Icons.Default.Add, contentDescription = "Sumar uno")
+                }
             }
         }
     }
@@ -203,18 +238,21 @@ private fun CartSummary(cartUiState: CartUiState) {
             Spacer(modifier = Modifier.height(8.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("Subtotal:")
-                Text("$${String.format(Locale("es","CL"), "%,.0f", cartUiState.subtotal)} CLP")
+                Text("$${String.format(chileLocale, "%,.0f", cartUiState.subtotal)} CLP")
             }
             Spacer(modifier = Modifier.height(4.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("Costo de Envío:")
-                Text("$${String.format(Locale("es","CL"), "%,.0f", cartUiState.costoEnvio)} CLP")
+                Text("$${String.format(chileLocale, "%,.0f", cartUiState.costoEnvio)} CLP")
             }
-            Divider(modifier = Modifier.padding(vertical = 8.dp))
+
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("Total:", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
                 Text(
-                    "$${String.format(Locale("es","CL"), "%,.0f", cartUiState.total)} CLP",
+                    "$${String.format(chileLocale, "%,.0f", cartUiState.total)} CLP",
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary
@@ -223,3 +261,4 @@ private fun CartSummary(cartUiState: CartUiState) {
         }
     }
 }
+

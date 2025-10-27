@@ -6,12 +6,14 @@ package com.huertohogar.app.model
  * @param password La contraseña ingresada.
  * @param passwordVisible Controla si la contraseña es visible o no.
  * @param errors Un objeto que contiene los mensajes de error para cada campo.
+ * @param isLoading Indica si se está procesando el login (para mostrar un loader).
  */
 data class LoginUiState(
     val email: String = "",
     val password: String = "",
     val passwordVisible: Boolean = false,
-    val errors: LoginErrorState = LoginErrorState()
+    val errors: LoginErrorState = LoginErrorState(),
+    val isLoading: Boolean = false // Estado para la animación de carga
 )
 
 /**

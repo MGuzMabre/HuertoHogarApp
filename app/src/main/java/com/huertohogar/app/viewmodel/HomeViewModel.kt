@@ -45,7 +45,8 @@ class HomeViewModel : ViewModel() {
                     stock = 150,
                     categoria = "frutas",
                     imagenUrl = "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/manzana.jpg?raw=true",
-                    origen = "Valle del Maule"
+                    origen = "Valle del Maule",
+                    unidad = "Kg"
                 ),
                 Producto(
                     id = "VR001",
@@ -55,7 +56,8 @@ class HomeViewModel : ViewModel() {
                     stock = 100,
                     categoria = "verduras",
                     imagenUrl = "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/zanahoria.jpg?raw=true",
-                    origen = "Región de O'Higgins"
+                    origen = "Región de O'Higgins",
+                    unidad = "Kg"
                 ),
                 Producto(
                     id = "PO001",
@@ -65,7 +67,8 @@ class HomeViewModel : ViewModel() {
                     stock = 50,
                     categoria = "organicos",
                     imagenUrl = "https://github.com/ElMabre/ProyectoHuertoHogar/blob/main/img/miel.jpg?raw=true",
-                    origen = "Región del Maule"
+                    origen = "Región del Maule",
+                    unidad = "Frasco 500g"
                 )
             )
         )

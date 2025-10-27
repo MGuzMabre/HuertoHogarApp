@@ -31,14 +31,16 @@ fun RegisterScreen(
     registerViewModel: RegisterViewModel = viewModel()
 ) {
     val uiState by registerViewModel.uiState.collectAsState()
-
     Scaffold { innerPadding ->
         RegisterForm(
             modifier = Modifier.padding(innerPadding),
             uiState = uiState,
             viewModel = registerViewModel,
             onRegisterClick = {
-                if (registerViewModel.validarFormulario()) {
+                // 1. Llamamos a la nueva función del ViewModel
+                registerViewModel.onRegisterClicked {
+                    // 2. Esta es la lambda 'onRegisterSuccess'.
+                    // Se ejecuta solo si el registro es exitoso.
                     navController.navigate(AppScreens.HomeScreen.route) {
                         popUpTo(AppScreens.LoginScreen.route) { inclusive = true }
                     }
@@ -59,6 +61,9 @@ private fun RegisterForm(
     onRegisterClick: () -> Unit,
     onLoginClick: () -> Unit
 ) {
+    // Deshabilitamos todos los campos si está cargando
+    val isEnabled = !uiState.isLoading
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -75,15 +80,15 @@ private fun RegisterForm(
         )
         Spacer(modifier = Modifier.height(24.dp))
 
-
         OutlinedTextField(
             value = uiState.nombre,
             onValueChange = viewModel::onNombreChange,
             label = { Text("Nombre") },
             modifier = Modifier.fillMaxWidth(),
             isError = uiState.errors.nombre != null,
-            supportingText = { if (uiState.errors.nombre != null) Text(uiState.errors.nombre!!) },
-            singleLine = true
+            supportingText = { if (uiState.errors.nombre != null) Text(uiState.errors.nombre) },
+            singleLine = true,
+            enabled = isEnabled
         )
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -93,8 +98,9 @@ private fun RegisterForm(
             label = { Text("Apellido") },
             modifier = Modifier.fillMaxWidth(),
             isError = uiState.errors.apellido != null,
-            supportingText = { if (uiState.errors.apellido != null) Text(uiState.errors.apellido!!) },
-            singleLine = true
+            supportingText = { if (uiState.errors.apellido != null) Text(uiState.errors.apellido) },
+            singleLine = true,
+            enabled = isEnabled
         )
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -104,9 +110,10 @@ private fun RegisterForm(
             label = { Text("RUN (sin puntos, con guión)") },
             modifier = Modifier.fillMaxWidth(),
             isError = uiState.errors.run != null,
-            supportingText = { if (uiState.errors.run != null) Text(uiState.errors.run!!) },
+            supportingText = { if (uiState.errors.run != null) Text(uiState.errors.run) },
             placeholder = { Text("12345678-9") },
-            singleLine = true
+            singleLine = true,
+            enabled = isEnabled
         )
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -116,9 +123,10 @@ private fun RegisterForm(
             label = { Text("Correo Electrónico") },
             modifier = Modifier.fillMaxWidth(),
             isError = uiState.errors.email != null,
-            supportingText = { if (uiState.errors.email != null) Text(uiState.errors.email!!) },
+            supportingText = { if (uiState.errors.email != null) Text(uiState.errors.email) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            singleLine = true
+            singleLine = true,
+            enabled = isEnabled
         )
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -128,7 +136,7 @@ private fun RegisterForm(
             label = { Text("Contraseña") },
             modifier = Modifier.fillMaxWidth(),
             isError = uiState.errors.password != null,
-            supportingText = { if (uiState.errors.password != null) Text(uiState.errors.password!!) },
+            supportingText = { if (uiState.errors.password != null) Text(uiState.errors.password) },
             visualTransformation = if (uiState.passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             singleLine = true,
@@ -139,7 +147,8 @@ private fun RegisterForm(
                         contentDescription = "Toggle password visibility"
                     )
                 }
-            }
+            },
+            enabled = isEnabled
         )
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -149,7 +158,7 @@ private fun RegisterForm(
             label = { Text("Confirmar Contraseña") },
             modifier = Modifier.fillMaxWidth(),
             isError = uiState.errors.confirmPassword != null,
-            supportingText = { if (uiState.errors.confirmPassword != null) Text(uiState.errors.confirmPassword!!) },
+            supportingText = { if (uiState.errors.confirmPassword != null) Text(uiState.errors.confirmPassword) },
             visualTransformation = if (uiState.confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             singleLine = true,
@@ -160,7 +169,8 @@ private fun RegisterForm(
                         contentDescription = "Toggle confirm password visibility"
                     )
                 }
-            }
+            },
+            enabled = isEnabled
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -173,31 +183,45 @@ private fun RegisterForm(
                 onCheckedChange = viewModel::onAceptaTerminosChange,
                 colors = CheckboxDefaults.colors(
                     checkedColor = MaterialTheme.colorScheme.primary
-                )
+                ),
+                enabled = isEnabled
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text("Acepto los términos y condiciones", style = MaterialTheme.typography.bodyMedium)
         }
         if (uiState.errors.aceptaTerminos != null) {
             Text(
-                text = uiState.errors.aceptaTerminos!!,
+                text = uiState.errors.aceptaTerminos,
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(start = 16.dp)
             )
         }
-
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = onRegisterClick,
-            modifier = Modifier.fillMaxWidth().height(48.dp)
+            onClick = onRegisterClick, // Usamos la función del parámetro
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp),
+            enabled = isEnabled // Deshabilitamos si está cargando
         ) {
-            Text("Crear Cuenta")
+            // Mostramos loader o texto
+            if (uiState.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            } else {
+                Text("Crear Cuenta")
+            }
         }
         Spacer(modifier = Modifier.height(16.dp))
 
-        TextButton(onClick = onLoginClick) {
+        TextButton(
+            onClick = onLoginClick,
+            enabled = isEnabled // Deshabilitamos si está cargando
+        ) {
             Text("¿Ya tienes una cuenta? Inicia Sesión")
         }
         Spacer(modifier = Modifier.height(24.dp))
@@ -211,4 +235,3 @@ fun RegisterScreenPreview() {
         RegisterScreen(navController = NavController(LocalContext.current))
     }
 }
-

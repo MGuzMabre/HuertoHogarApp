@@ -1,18 +1,28 @@
 package com.huertohogar.app.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.huertohogar.app.data.local.datastorage.SessionManager
 import com.huertohogar.app.model.RegisterErrorState
 import com.huertohogar.app.model.RegisterUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 /**
  * ViewModel para la pantalla de Registro (RegisterScreen).
  * Contiene toda la lógica de negocio y el estado del formulario de registro.
+ *
+ * Hereda de 'AndroidViewModel' para tener acceso al 'application' context,
+ * necesario para nuestro SessionManager.
  */
-class RegisterViewModel : ViewModel() {
+class RegisterViewModel(application: Application) : AndroidViewModel(application) {
+
+    // Creamos la instancia del SessionManager para poder guardar datos
+    private val sessionManager = SessionManager(application)
 
     // _uiState es un flujo de datos mutable que contiene el estado actual del formulario.
     // Es privado para que solo el ViewModel pueda modificarlo.
@@ -22,89 +32,87 @@ class RegisterViewModel : ViewModel() {
     // La interfaz de usuario (la pantalla) observa este flujo para reaccionar a los cambios.
     val uiState: StateFlow<RegisterUiState> = _uiState.asStateFlow()
 
+    // --- Funciones de actualización de estado (con reseteo de isLoading) ---
 
-    /**
-     * Esta función se llama cada vez que el usuario escribe en el campo de nombre.
-     * Actualiza el valor del nombre en el estado y borra cualquier error asociado.
-     * @param nombre El nuevo texto que el usuario ha introducido.
-     */
     fun onNombreChange(nombre: String) {
-        // "update" actualiza el estado de forma segura.
         _uiState.update { currentState ->
             currentState.copy(
                 nombre = nombre,
-                errors = currentState.errors.copy(nombre = null) // Limpia el error del nombre.
+                errors = currentState.errors.copy(nombre = null),
+                isLoading = false
             )
         }
     }
 
-    /**
-     * Se activa cuando cambia el campo de apellido.
-     * @param apellido El nuevo apellido introducido.
-     */
     fun onApellidoChange(apellido: String) {
-        _uiState.update { it.copy(apellido = apellido, errors = it.errors.copy(apellido = null)) }
+        _uiState.update { it.copy(apellido = apellido, errors = it.errors.copy(apellido = null), isLoading = false) }
     }
 
-    /**
-     * Se activa cuando cambia el campo de RUN.
-     * @param run El nuevo RUN introducido.
-     */
     fun onRunChange(run: String) {
-        _uiState.update { it.copy(run = run, errors = it.errors.copy(run = null)) }
+        _uiState.update { it.copy(run = run, errors = it.errors.copy(run = null), isLoading = false) }
     }
 
-    /**
-     * Se activa cuando cambia el campo de email.
-     * @param email El nuevo email introducido.
-     */
     fun onEmailChange(email: String) {
-        _uiState.update { it.copy(email = email, errors = it.errors.copy(email = null)) }
+        _uiState.update { it.copy(email = email, errors = it.errors.copy(email = null), isLoading = false) }
     }
 
-    /**
-     * Se activa cuando cambia el campo de contraseña.
-     * @param password La nueva contraseña introducida.
-     */
     fun onPasswordChange(password: String) {
-        _uiState.update { it.copy(password = password, errors = it.errors.copy(password = null)) }
+        _uiState.update { it.copy(password = password, errors = it.errors.copy(password = null), isLoading = false) }
     }
 
-    /**
-     * Se activa cuando cambia el campo de confirmar contraseña.
-     * @param confirmPassword La nueva confirmación de contraseña.
-     */
     fun onConfirmPasswordChange(confirmPassword: String) {
-        _uiState.update { it.copy(confirmPassword = confirmPassword, errors = it.errors.copy(confirmPassword = null)) }
+        _uiState.update { it.copy(confirmPassword = confirmPassword, errors = it.errors.copy(confirmPassword = null), isLoading = false) }
     }
 
-    /**
-     * Se activa cuando el usuario marca o desmarca la casilla de aceptar términos.
-     * @param acepta `true` si está marcada, `false` si no.
-     */
     fun onAceptaTerminosChange(acepta: Boolean) {
-        _uiState.update { it.copy(aceptaTerminos = acepta, errors = it.errors.copy(aceptaTerminos = null)) }
+        _uiState.update { it.copy(aceptaTerminos = acepta, errors = it.errors.copy(aceptaTerminos = null), isLoading = false) }
     }
 
-    /**
-     * Cambia la visibilidad de la contraseña (para mostrar/ocultar los caracteres).
-     */
+    // --- Fin funciones de actualización ---
+
     fun onTogglePasswordVisibility() {
         _uiState.update { it.copy(passwordVisible = !it.passwordVisible) }
     }
 
-    /**
-     * Cambia la visibilidad de la confirmación de contraseña.
-     */
     fun onToggleConfirmPasswordVisibility() {
         _uiState.update { it.copy(confirmPasswordVisible = !it.confirmPasswordVisible) }
     }
 
     /**
+     * Función principal que se llama desde la UI al pulsar "Crear Cuenta".
+     * Gestiona el estado de carga y la navegación.
+     * @param onRegisterSuccess Lambda que la UI pasa para ser llamada
+     * cuando el registro sea exitoso.
+     */
+    fun onRegisterClicked(onRegisterSuccess: () -> Unit) {
+        // 1. Ponemos el estado en "cargando"
+        _uiState.update { it.copy(isLoading = true) }
+
+        // 2. Validamos
+        if (validarFormulario()) {
+            // 3. Si es válido, lanzamos corrutina
+            viewModelScope.launch {
+                // 4. Guardamos email
+                sessionManager.saveUserEmail(_uiState.value.email)
+
+                // 5. Quitamos carga
+                _uiState.update { it.copy(isLoading = false) }
+
+                // 6. ¡Llamamos al callback para navegar!
+                onRegisterSuccess()
+            }
+        } else {
+            // 3b. Si NO es válido, quitamos la carga
+            _uiState.update { it.copy(isLoading = false) }
+        }
+    }
+
+    /**
      * Valida el estado actual del formulario y actualiza el estado de los errores.
+     * AHORA ES PRIVADA.
      * @return `true` si el formulario es válido, `false` si contiene errores.
      */
-    fun validarFormulario(): Boolean {
+    private fun validarFormulario(): Boolean {
         // Obtiene el estado actual para no tener que repetirlo.
         val state = _uiState.value
         // Crea un nuevo objeto de errores basado en las validaciones.
@@ -117,18 +125,16 @@ class RegisterViewModel : ViewModel() {
             confirmPassword = if (state.password != state.confirmPassword) "Las contraseñas no coinciden" else null,
             aceptaTerminos = if (!state.aceptaTerminos) "Debes aceptar los términos y condiciones" else null
         )
-
         // Actualiza el estado de la UI con los nuevos errores que se encontraron.
         _uiState.update { it.copy(errors = newErrors) }
 
         // Devuelve 'true' solo si TODOS los campos de error son nulos (o sea, no hay errores).
-        return newErrors.nombre == null && newErrors.apellido == null && newErrors.run == null &&
+        val isValid = newErrors.nombre == null && newErrors.apellido == null && newErrors.run == null &&
                 newErrors.email == null && newErrors.password == null &&
                 newErrors.confirmPassword == null && newErrors.aceptaTerminos == null
-        // TODO: La validación del RUN y la contraseña podrían ser más complejas y robustas.
-        // Por ejemplo, verificar el dígito verificador del RUN o requerir caracteres especiales en la contraseña.
-    }
 
+        return isValid
+    }
 
     /**
      * Comprueba si un email tiene un formato válido.
@@ -136,7 +142,6 @@ class RegisterViewModel : ViewModel() {
      * @return `true` si es un email válido.
      */
     private fun isValidEmail(email: String): Boolean {
-        // Usa un patrón estándar de Android para validar emails. ¡Muy práctico!
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
@@ -146,10 +151,8 @@ class RegisterViewModel : ViewModel() {
      * @return `true` si el formato es válido.
      */
     private fun isValidRun(run: String): Boolean {
-        // Una expresión regular para asegurar que el RUN tenga el formato correcto.
         val regex = """^\d{7,8}-[\d|kK]$""".toRegex()
         return regex.matches(run)
-        // TODO: Esta validación solo comprueba el formato, no si el dígito verificador es correcto.
-        // Se podría implementar el algoritmo del Módulo 11 para una validación completa.
     }
 }
+

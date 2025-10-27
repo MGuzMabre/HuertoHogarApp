@@ -34,6 +34,11 @@ import com.huertohogar.app.ui.theme.HuertoHogarAppTheme
 import com.huertohogar.app.viewmodel.CartViewModel
 import com.huertohogar.app.viewmodel.ProductDetailViewModel
 import java.util.Locale
+
+// Definimos el Locale para Chile (CLP) de la forma moderna
+// para no usar el constructor obsoleto.
+private val chileLocale: Locale = Locale.forLanguageTag("es-CL")
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductDetailScreen(
@@ -116,7 +121,7 @@ fun ProductDetailScreen(
     }
 }
 
-@SuppressLint("DefaultLocale")
+@SuppressLint("DefaultLocale") // Lo mantenemos por si acaso, aunque ya usamos Locale explícito
 @Composable
 private fun ProductDetailsContent(
     producto: Producto,
@@ -162,8 +167,8 @@ private fun ProductDetailsContent(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                // Formatea el precio y añade "/ kg"
-                text = "$${String.format(Locale("es", "CL"), "%,.0f", producto.precio)} CLP / kg", // <-- CAMBIO AQUÍ
+                // ¡ARREGLO! Usamos el Locale de Chile moderno
+                text = "$${String.format(chileLocale, "%,.0f", producto.precio)} CLP / ${producto.unidad}",
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold
@@ -203,7 +208,7 @@ private fun ProductDetailsContent(
 @Preview(showBackground = true)
 @Composable
 fun ProductDetailScreenPreview() {
-    val productoDeEjemplo = Producto("FR001", "Manzanas Fuji", "...", 1200.0, 150, "frutas", "", "Valle del Maule")
+    val productoDeEjemplo = Producto("FR001", "Manzanas Fuji", "...", 1200.0, 150, "frutas", "", "Valle del Maule", unidad = "Kg")
     HuertoHogarAppTheme {
         Scaffold(topBar = { TopAppBar(title = { Text("Detalle Producto") }) }) { padding ->
             Box(modifier = Modifier.padding(padding)) {
