@@ -11,10 +11,16 @@ pluginManagement {
         gradlePluginPortal()
         maven {
             url = uri("https://maven.pkg.github.com/ElMabre/HuertoHogarApp")
-            credentials {
-                username = extra["gpr.user"] as String
-                password = extra["gpr.key"] as String
+
+            // Solo intentar configurar credenciales SI existen en un archivo gradle.properties
+            // Esto evita que el build falle para usuarios nuevos.
+            if (extra.has("gpr.user") && extra.has("gpr.key")) {
+                credentials {
+                    username = extra["gpr.user"] as String
+                    password = extra["gpr.key"] as String
+                }
             }
+
         }
     }
 }
@@ -29,9 +35,13 @@ dependencyResolutionManagement {
         // Repositorio GitHub Packages para dependencias privadas
         maven {
             url = uri("https://maven.pkg.github.com/ElMabre/HuertoHogarApp")
-            credentials {
-                username = extra["gpr.user"] as String
-                password = extra["gpr.key"] as String
+            
+            // Se repite la misma lógica aquí para las dependencias del proyecto
+            if (extra.has("gpr.user") && extra.has("gpr.key")) {
+                credentials {
+                    username = extra["gpr.user"] as String
+                    password = extra["gpr.key"] as String
+                }
             }
         }
     }
